@@ -1,0 +1,117 @@
+# security-daily-brief 수집 소스 설정
+# 피드 추가/제거는 이 파일만 수정하면 됩니다. collect.py 는 건드릴 필요 없습니다.
+
+settings:
+  window_hours: 24          # 수집 기간 (직전 N시간)
+  max_items_per_feed: 15    # 피드당 최대 수집 건수 (폭주 방지)
+  cvss_min: 7.0             # 이 점수 이상만 수집
+  cvss_deep_dive: 9.0       # 이 점수 이상은 PoC/EPSS 상세 조회
+  kev_lookback_days: 7      # KEV 는 최근 N일 등재분
+  request_timeout: 20
+  seen_retention_days: 30   # 중복 제거 상태파일 보존 기간
+
+# ─────────────────────────── 국내 (KR) ───────────────────────────
+feeds_kr:
+  - name: "안랩 ASEC"
+    url: "https://asec.ahnlab.com/ko/feed/"
+    tag: "위협인텔"
+    priority: 1             # 1 = 필수. 실패 시 에러로 보고
+
+  - name: "KISA 보호나라 보안공지"
+    url: "https://www.boho.or.kr/kr/rss.do?bbsId=B0000133"
+    tag: "정부공지"
+    priority: 1
+
+  - name: "KISA 취약점 정보"
+    url: "https://www.boho.or.kr/kr/rss.do?bbsId=B0000302"
+    tag: "취약점"
+    priority: 1
+
+  - name: "KISA 경보단계"
+    url: "https://www.boho.or.kr/kr/rss.do?bbsId=B0000342"
+    tag: "경보"
+    priority: 2
+
+  - name: "KISA 보고서/가이드"
+    url: "https://www.boho.or.kr/kr/rss.do?bbsId=B0000127"
+    tag: "가이드"
+    priority: 3
+
+  - name: "보안뉴스"
+    url: "https://www.boannews.com/media/news_rss.xml"
+    tag: "뉴스"
+    priority: 2
+
+  - name: "데일리시큐"
+    url: "https://www.dailysecu.com/rss/allArticle.xml"
+    tag: "뉴스"
+    priority: 3
+
+# ─────────────────────────── 해외 (Global) ───────────────────────────
+feeds_global:
+  - name: "BleepingComputer"
+    url: "https://www.bleepingcomputer.com/feed/"
+    tag: "뉴스"
+    priority: 1
+
+  - name: "The Hacker News"
+    url: "https://feeds.feedburner.com/TheHackersNews"
+    tag: "뉴스"
+    priority: 2
+
+  - name: "SANS ISC Diary"
+    url: "https://isc.sans.edu/rssfeed_full.xml"
+    tag: "위협인텔"
+    priority: 1
+
+  - name: "Unit 42"
+    url: "https://unit42.paloaltonetworks.com/feed/"
+    tag: "위협인텔"
+    priority: 2
+
+  - name: "Cisco Talos"
+    url: "https://blog.talosintelligence.com/rss/"
+    tag: "위협인텔"
+    priority: 2
+
+  - name: "Google Threat Intelligence (Mandiant)"
+    # cloud.google.com/blog 는 RSS를 서빙하지 않습니다. 정식 피드 호스트는 cloudblog.withgoogle.com
+    url: "https://cloudblog.withgoogle.com/topics/threat-intelligence/rss/"
+    tag: "위협인텔"
+    priority: 2
+
+  - name: "Microsoft Security Blog (MSTIC)"
+    # MSRC 블로그는 www.microsoft.com/en-us/msrc/blog 로 이전되며 기존 피드가 끊겼습니다.
+    # MSRC 블로그는 버그바운티/BlueHat 공지 비중이 커서, 위협 인텔 중심인 이쪽이 브리핑에 더 적합합니다.
+    url: "https://www.microsoft.com/en-us/security/blog/feed/"
+    tag: "벤더"
+    priority: 3
+
+  - name: "Project Zero"
+    url: "https://googleprojectzero.blogspot.com/feeds/posts/default"
+    tag: "취약점연구"
+    priority: 3
+
+# ─────────────────────────── API 기반 소스 ───────────────────────────
+apis:
+  nvd:
+    enabled: true
+    base_url: "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    # API 키 없이도 동작하지만 30초당 5회로 제한됩니다.
+    # https://nvd.nist.gov/developers/request-an-api-key 에서 무료 발급 후
+    # Routine 환경변수 NVD_API_KEY 로 등록하면 30초당 50회로 완화됩니다.
+    api_key_env: "NVD_API_KEY"
+
+  kev:
+    enabled: true
+    url: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+
+  epss:
+    enabled: true
+    base_url: "https://api.first.org/data/v1/epss"
+
+  poc_index:
+    enabled: true
+    # nomi-sec/PoC-in-GitHub: 공개 PoC 저장소 메타데이터 인덱스.
+    # 코드를 내려받지 않고 저장소 링크/설명/스타수만 조회합니다.
+    base_url: "https://raw.githubusercontent.com/nomi-sec/PoC-in-GitHub/master"
